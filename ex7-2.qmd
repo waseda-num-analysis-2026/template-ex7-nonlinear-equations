@@ -1,0 +1,301 @@
+---
+title: "Exercise 7.2 — Comparing Root-Finding Methods"
+subtitle: "Numerical Analysis 2026 — Lecture 7"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    highlight-style: github
+execute:
+  echo: true
+  warning: false
+jupyter: python3
+---
+
+## Problem
+
+For
+
+$$
+f(x)=x-\cos x=0
+$$
+
+(unique real root $\approx 0.7391$), implement and compare:
+
+1. **Newton's method** — use $f'(x_k)$ at each step
+2. **Simplified Newton's method** — use $f'(x_0)$ only once
+3. **Bisection method** — halve a bracketing interval
+
+**Tasks:**
+
+- Compare the number of iterations, function/derivative evaluations,
+  convergence rate, and robustness
+- Plot the error history (AI permitted; plots recommended)
+
+AI is permitted. AI is **recommended** for plotting.
+
+---
+
+## 1. Target function
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+
+def f(x):
+    return x - np.cos(x)
+
+def df(x):
+    return 1 + np.sin(x)
+
+x_star = 0.7390851332151607  # reference root (high accuracy)
+```
+
+---
+
+## 2. Newton's method
+
+Complete the update step `x_new = ...`.
+
+```{python}
+def newton_method(f, df, x0, max_iter=100, tol=1e-12):
+    x_history = [x0]
+    f_evals = 0
+    df_evals = 0
+    start_time = time.time()
+    x = x0
+
+    for k in range(max_iter):
+        fx = f(x)
+        dfx = df(x)
+        f_evals += 1
+        df_evals += 1
+        x_new = None  # TODO
+        x_history.append(x_new)
+
+        if abs(fx) < tol:
+            end_time = time.time()
+            return {
+                "solution": x_new,
+                "iterations": k + 1,
+                "function_evaluations": f_evals,
+                "derivative_evaluations": df_evals,
+                "total_evaluations": f_evals + df_evals,
+                "history": np.array(x_history),
+                "converged": True,
+                "execution_time": end_time - start_time,
+                "method": "Newton",
+            }
+        x = x_new
+
+    end_time = time.time()
+    return {
+        "solution": x,
+        "iterations": max_iter,
+        "function_evaluations": f_evals,
+        "derivative_evaluations": df_evals,
+        "total_evaluations": f_evals + df_evals,
+        "history": np.array(x_history),
+        "converged": False,
+        "execution_time": end_time - start_time,
+        "method": "Newton",
+    }
+```
+
+---
+
+## 3. Simplified Newton's method
+
+Compute $f'(x_0)$ once, then complete the update.
+
+```{python}
+def simplified_newton_method(f, df, x0, max_iter=100, tol=1e-12):
+    x_history = [x0]
+    f_evals = 0
+    df_evals = 1
+    start_time = time.time()
+    x = x0
+    df0 = None  # TODO
+
+    for k in range(max_iter):
+        fx = f(x)
+        f_evals += 1
+        x_new = None  # TODO
+        x_history.append(x_new)
+
+        if abs(fx) < tol:
+            end_time = time.time()
+            return {
+                "solution": x_new,
+                "iterations": k + 1,
+                "function_evaluations": f_evals,
+                "derivative_evaluations": df_evals,
+                "total_evaluations": f_evals + df_evals,
+                "history": np.array(x_history),
+                "converged": True,
+                "execution_time": end_time - start_time,
+                "method": "Simplified Newton",
+            }
+        x = x_new
+
+    end_time = time.time()
+    return {
+        "solution": x,
+        "iterations": max_iter,
+        "function_evaluations": f_evals,
+        "derivative_evaluations": df_evals,
+        "total_evaluations": f_evals + df_evals,
+        "history": np.array(x_history),
+        "converged": False,
+        "execution_time": end_time - start_time,
+        "method": "Simplified Newton",
+    }
+```
+
+---
+
+## 4. Bisection method (template provided)
+
+```{python}
+def bisection_method(f, a, b, max_iter=100, tol=1e-12):
+    x_history = []
+    f_evals = 2
+    start_time = time.time()
+    fa = f(a)
+    fb = f(b)
+
+    if fa * fb >= 0:
+        end_time = time.time()
+        return {
+            "solution": None,
+            "iterations": 0,
+            "function_evaluations": f_evals,
+            "derivative_evaluations": 0,
+            "total_evaluations": f_evals,
+            "history": np.array([]),
+            "converged": False,
+            "execution_time": end_time - start_time,
+            "method": "Bisection",
+            "error": "Initial interval does not bracket a root",
+        }
+
+    for k in range(max_iter):
+        c = (a + b) / 2
+        x_history.append(c)
+        fc = f(c)
+        f_evals += 1
+
+        if abs(fc) < tol or (b - a) / 2 < tol:
+            end_time = time.time()
+            return {
+                "solution": c,
+                "iterations": k + 1,
+                "function_evaluations": f_evals,
+                "derivative_evaluations": 0,
+                "total_evaluations": f_evals,
+                "history": np.array(x_history),
+                "converged": True,
+                "execution_time": end_time - start_time,
+                "method": "Bisection",
+            }
+
+        if fa * fc < 0:
+            b = c
+            fb = fc
+        else:
+            a = c
+            fa = fc
+
+    end_time = time.time()
+    return {
+        "solution": (a + b) / 2,
+        "iterations": max_iter,
+        "function_evaluations": f_evals,
+        "derivative_evaluations": 0,
+        "total_evaluations": f_evals,
+        "history": np.array(x_history),
+        "converged": False,
+        "execution_time": end_time - start_time,
+        "method": "Bisection",
+    }
+```
+
+---
+
+## 5. Comparison and plots
+
+Use a common initial guess (for example $x_0=1.0$) and a valid bracket
+$[a,b]$ for bisection (for example $[0,1]$).
+
+**Why count function and derivative evaluations?**  A method with fewer
+iterations is not necessarily cheaper overall.  Newton may converge in very
+few steps, but each step evaluates both $f$ and $f'$.  Simplified Newton
+evaluates $f'$ only once.  Bisection uses only $f$, but often needs more
+iterations.  Recording these counts helps you compare **convergence speed**
+(how many steps) with **work per step** (how many function values are
+computed).
+
+```{python}
+x0 = 1.0
+# TODO:
+# res_newton = newton_method(...)
+# res_simp = simplified_newton_method(...)
+# res_bis = bisection_method(f, a=0.0, b=1.0)
+
+# TODO: copy counts from the result dictionaries, e.g.
+# res_newton["function_evaluations"], res_newton["derivative_evaluations"]
+
+# TODO: plot |x_k - x_star| vs k for each method (log scale optional)
+```
+
+Fill in a summary table like the following.  Copy the numbers from your
+result dictionaries (`function_evaluations`, `derivative_evaluations`,
+etc.); do not invent them by hand.
+
+| Method | Converged? | Iterations | Function evals | Derivative evals | Final error |
+|--------|------------|------------|----------------|------------------|-------------|
+| Newton |            |            |                |                  |             |
+| Simplified Newton | |            |                |                  |             |
+| Bisection |          |            |                |                  |             |
+
+: **Summary table (fill after running your code).**
+
+- **Method** — which root-finding algorithm you ran.
+- **Converged?** — whether the run met the stopping criterion before
+  `max_iter` (yes/no).
+- **Iterations** — number of update steps performed (`iterations` in the
+  result dictionary).
+- **Function evals** — how many times $f(x)$ was evaluated
+  (`function_evaluations`).
+- **Derivative evals** — how many times $f'(x)$ was evaluated
+  (`derivative_evaluations`; bisection should be 0).
+- **Final error** — for example $|x_{\text{final}}-x^*|$ or $|f(x_{\text{final}})|$
+  at the returned solution.
+
+---
+
+## 6. Discussion
+
+Briefly comment on convergence rate, cost, and robustness.  In particular,
+explain why a method with fewer iterations may still have a different
+evaluation cost.
+
+> **Your answer:**
+>
+> *(write here)*
+
+---
+
+## AI Usage
+
+Check one:
+
+- [ ] I did not use AI.
+- [ ] I used AI for debugging / plotting / explanation only.
+- [ ] I used AI more substantially, and I verified the result myself.
+
+If you used AI, briefly describe how:
+
+> *(write here)*

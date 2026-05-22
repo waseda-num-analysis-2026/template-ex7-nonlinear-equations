@@ -1,0 +1,174 @@
+---
+title: "Exercise 7.1 — Fixed-Point Iteration on a Cubic"
+subtitle: "Numerical Analysis 2026 — Lecture 7"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    highlight-style: github
+execute:
+  echo: true
+  warning: false
+jupyter: python3
+---
+
+## Problem
+
+Solve
+
+$$
+f(x)=x^3-3x-1=0
+$$
+
+using three fixed-point maps (real roots $\approx 1.88,\,-0.35,\,-1.53$):
+
+$$
+g_1(x)=\frac{x^3-1}{3},\qquad
+g_2(x)=\frac{3x+1}{x^2}\ (x\neq 0),\qquad
+g_3(x)=\sqrt[3]{3x+1}.
+$$
+
+**Tasks:**
+
+- Implement all three methods
+- Run numerical experiments from initial guesses near each root
+- Visualize convergent methods (AI permitted; plots recommended)
+- Compare your numerical results with the local convergence analysis in
+  Lecture 7, Section 2 of the shared handout
+- Write a short discussion (theory vs experiment, root sensitivity, method
+  comparison)
+
+AI is permitted. AI is **recommended** for plotting.
+
+---
+
+## 1. Implementation
+
+Complete the iteration routine and the three maps.
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+def fixed_point_iteration(g, x0, max_iter=50, tol=1e-10):
+    """Fixed-point iteration x_{k+1} = g(x_k)."""
+    x_history = [float(x0)]
+    x = float(x0)
+    for k in range(max_iter):
+        x_new = g(x)  # TODO: if needed, handle domain errors (e.g. g2 at x=0)
+        x_history.append(x_new)
+        if abs(x_new - x) < tol:
+            return np.array(x_history), True
+        x = x_new
+    return np.array(x_history), False
+
+def g1(x):
+    return (x**3 - 1) / 3
+
+def g2(x):
+    # TODO: implement; avoid division by zero
+    pass
+
+def g3(x):
+    return np.cbrt(3 * x + 1)
+```
+
+---
+
+## 2. Numerical experiments
+
+Choose initial guesses near each of the three real roots (for example, about
+10% away from an estimated root).  Briefly state how you chose your initial
+guesses.  In particular, remember that $g_2$ is not defined at $x=0$.
+
+For each $(g_j,\ x_0)$, record whether the iteration converges and which
+root it approaches.
+
+```{python}
+# Example structure (edit initial guesses and add more runs):
+roots_ref = np.roots([1, 0, -3, -1])
+roots_ref = np.sort(roots_ref[np.isreal(roots_ref)].real)
+roots_ref
+```
+
+```{python}
+initial_guesses = [
+    # TODO: add your initial guesses near each root
+]
+
+def nearest_root(x, roots=roots_ref):
+    """Return the closest reference root to x."""
+    return roots[np.argmin(np.abs(roots - x))]
+
+# After completing g1, g2, and g3, create the runs like this:
+# experiments = [
+#     {"g": g, "x0": x0, "label": f"{g_name}, x0={x0}"}
+#     for g_name, g in {"g1": g1, "g2": g2, "g3": g3}.items()
+#     for x0 in initial_guesses
+# ]
+experiments = []  # TODO: replace with the run list above after implementation
+
+results = []
+for exp in experiments:
+    hist, ok = fixed_point_iteration(exp["g"], exp["x0"])
+    final_x = hist[-1]
+    results.append({
+        **exp,
+        "history": hist,
+        "converged": ok,
+        "final_x": final_x,
+        "nearest_root": nearest_root(final_x) if np.isfinite(final_x) else np.nan,
+    })
+```
+
+---
+
+## 3. Visualization
+
+Plot iteration histories or errors for methods that converge (for example
+$|x_k-x^*|$ vs $k$).  Label axes and legends clearly.
+
+```{python}
+# TODO: your plots
+```
+
+---
+
+## 4. Comparison with Lecture 7, Section 2
+
+Relate your numerical results to the local convergence analysis in
+Lecture 7, Section 2 of the shared handout, and compare them.  Use tables
+or figures as appropriate to support your comparison.
+
+> **Your answer:**
+>
+> *(write here)*
+
+---
+
+## 5. Discussion
+
+Answer briefly:
+
+1. How well do theoretical predictions match experiments?
+2. Does the same method behave differently for different roots?  Why?
+3. Which map had the best practical convergence?
+
+> **Your answer:**
+>
+> *(write here)*
+
+---
+
+## AI Usage
+
+Check one:
+
+- [ ] I did not use AI.
+- [ ] I used AI for debugging / plotting / explanation only.
+- [ ] I used AI more substantially, and I verified the result myself.
+
+If you used AI, briefly describe how:
+
+> *(write here)*
